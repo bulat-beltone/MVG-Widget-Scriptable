@@ -99,15 +99,10 @@ const LINE_COLORS = {
 
 // Parse widget parameters
 const parameters = args.widgetParameter ? args.widgetParameter.split(",") : [];
-const station = parameters[0]?.trim();
+const station = parameters[0]?.trim() || "Marienplatz";
 const platform = parameters[1] ? Number(parameters[1].trim()) : null;
 const labels = parameters[2] ? parameters[2].split(";").map(label => label.trim()) : null;
 const bgColor = parameters[3] ? parameters[3].trim() : CONFIG.defaultBackgroundColor;
-
-// Validate required parameters
-if (!station) {
-    throw new Error("Station name is required in widget parameters (e.g., 'Marienplatz').");
-}
 
 // Helper Functions
 function formatStationName(station) {
@@ -172,7 +167,7 @@ async function getDepartures(globalId) {
 // Widget Creation
 async function createWidget() {
     const widgetSize = config.widgetFamily || 'large';
-    const config = WIDGET_CONFIG[widgetSize];
+    const widgetConfig = WIDGET_CONFIG[widgetSize];
     
     // Get station data
     const globalId = await getStationId(station);
@@ -191,7 +186,7 @@ async function createWidget() {
     // Create widget
     const widget = new ListWidget();
     widget.backgroundColor = new Color(bgColor);
-    widget.setPadding(config.padding, config.padding, config.padding, config.padding);
+    widget.setPadding(widgetConfig.padding, widgetConfig.padding, widgetConfig.padding, widgetConfig.padding);
 
     // Add header
     const mainStack = widget.addStack();
@@ -202,31 +197,31 @@ async function createWidget() {
     const headerStack = mainStack.addStack();
     headerStack.layoutVertically();
     headerStack.size = new Size(
-        config.logoSize.width + config.stationSize.width + config.departSize.width + 2 * config.spacing,
-        config.headerSize
+        widgetConfig.logoSize.width + widgetConfig.stationSize.width + widgetConfig.departSize.width + 2 * widgetConfig.spacing,
+        widgetConfig.headerSize
     );
 
     const stationName = headerStack.addText(station.replace(/^München-/, ''));
     stationName.textColor = Color.white();
     stationName.leftAlignText();
-    stationName.font = Font.boldSystemFont(config.headlineFontSize);
+    stationName.font = Font.boldSystemFont(widgetConfig.headlineFontSize);
 
     mainStack.addSpacer(8);
 
     // Add departure rows
-    for (let i = 0; i < config.itemsCount; i++) {
+    for (let i = 0; i < widgetConfig.itemsCount; i++) {
         const rowStack = mainStack.addStack();
-        rowStack.spacing = config.spacing;
+        rowStack.spacing = widgetConfig.spacing;
         rowStack.size = new Size(
-            config.logoSize.width + config.stationSize.width + config.departSize.width + 2 * config.spacing,
-            config.columnHeight + 2 * config.spacing
+            widgetConfig.logoSize.width + widgetConfig.stationSize.width + widgetConfig.departSize.width + 2 * widgetConfig.spacing,
+            widgetConfig.columnHeight + 2 * widgetConfig.spacing
         );
         rowStack.layoutHorizontally();
         rowStack.centerAlignContent();
 
         // Line number
         const lineStack = rowStack.addStack();
-        lineStack.size = config.logoSize;
+        lineStack.size = widgetConfig.logoSize;
         lineStack.centerAlignContent();
 
         const lineName = lineStack.addText(departures[i].label);
@@ -241,25 +236,25 @@ async function createWidget() {
             lineName.textColor = Color.white();
         }
 
-        lineName.font = Font.boldSystemFont(config.logoFontSize);
+        lineName.font = Font.boldSystemFont(widgetConfig.logoFontSize);
         lineName.centerAlignText();
         lineName.minimumScaleFactor = 0.4;
 
         // Destination
         const destinationStack = rowStack.addStack();
-        destinationStack.size = config.stationSize;
+        destinationStack.size = widgetConfig.stationSize;
         destinationStack.layoutVertically();
         destinationStack.bottomAlignContent();
 
         const destinationName = destinationStack.addText(truncate(departures[i].destination));
-        destinationName.font = Font.lightSystemFont(config.stationFontSize);
+        destinationName.font = Font.lightSystemFont(widgetConfig.stationFontSize);
         destinationName.textColor = Color.white();
         destinationName.leftAlignText();
         destinationName.minimumScaleFactor = 0.95;
 
         // Departure time
         const departureStack = rowStack.addStack();
-        departureStack.size = config.departSize;
+        departureStack.size = widgetConfig.departSize;
         departureStack.bottomAlignContent();
 
         const { recalculatedTime, isDelayed } = calculateDeparture(
@@ -268,7 +263,7 @@ async function createWidget() {
         );
 
         const departureTime = departureStack.addText(formatDepartureTime(recalculatedTime));
-        departureTime.font = Font.boldSystemFont(config.departFontSize);
+        departureTime.font = Font.boldSystemFont(widgetConfig.departFontSize);
         departureTime.textColor = isDelayed ? Color.red() : Color.white();
         departureTime.rightAlignText();
         departureTime.minimumScaleFactor = 0.95;
@@ -278,12 +273,12 @@ async function createWidget() {
     const footerStack = mainStack.addStack();
     footerStack.bottomAlignContent();
     footerStack.size = new Size(
-        config.logoSize.width + config.stationSize.width + config.departSize.width + 2 * config.spacing,
-        config.footerHeight
+        widgetConfig.logoSize.width + widgetConfig.stationSize.width + widgetConfig.departSize.width + 2 * widgetConfig.spacing,
+        widgetConfig.footerHeight
     );
 
     const updateTime = footerStack.addText(getCurrentTime());
-    updateTime.font = Font.lightSystemFont(config.footerFontSize);
+    updateTime.font = Font.lightSystemFont(widgetConfig.footerFontSize);
     updateTime.textColor = Color.white();
     updateTime.rightAlignText();
     updateTime.textOpacity = 0.8;
