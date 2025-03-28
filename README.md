@@ -1,6 +1,7 @@
 # MVG-Abfahrtsmonitor Widget
 
-A Scriptable widget for iOS that displays real-time departure information for Munich's public transportation system (MVG). This widget shows current departures for buses, trains, and trams at any specified station in Munich.
+A Scriptable widget for iOS that displays real-time departure information for Munich's public transportation system (MVG). 
+This widget shows current departures for buses, trains, and trams at any specified station in Munich.
 
 ## Features
 
