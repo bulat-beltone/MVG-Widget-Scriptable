@@ -20,11 +20,36 @@ const CONFIG = {
 };
 
 // Parse widget parameters
-const parameters = args.widgetParameter ? args.widgetParameter.split(",") : [];
-const station = parameters[0]?.trim() || "Marienplatz";
-const platform = parameters[1] ? Number(parameters[1].trim()) : null;
-const labels = parameters[2] ? parameters[2].split(";").map(label => label.trim()) : null;
-const bgColor = parameters[3] ? parameters[3].trim() : CONFIG.defaultBackgroundColor;
+const parameters = args.widgetParameter ? args.widgetParameter.split(";") : [];
+let userStation = "Marienplatz";
+let userPlatforms = null;
+let userLines = null;
+let userBackgroundColor = CONFIG.defaultBackgroundColor;
+
+// Parse parameters in any order
+parameters.forEach(param => {
+    const trimmedParam = param.trim();
+    if (!trimmedParam) return;
+
+    // Split into key and value
+    const [key, ...valueParts] = trimmedParam.split(":").map(part => part.trim());
+    const value = valueParts.join(":").trim(); // Rejoin in case there are colons in the value
+
+    switch (key.toLowerCase()) {
+        case "station":
+            userStation = value;
+            break;
+        case "platform":
+            userPlatforms = value ? Number(value) : null;
+            break;
+        case "lines":
+            userLines = value ? value.split(",").map(line => line.trim()) : null;
+            break;
+        case "background":
+            userBackgroundColor = value;
+            break;
+    }
+});
 
 // Widget size configurations
 const WIDGET_CONFIG = {
@@ -170,7 +195,7 @@ async function createWidget() {
     const widgetConfig = WIDGET_CONFIG[widgetSize];
     
     // Get station data
-    const globalId = await getStationId(station);
+    const globalId = await getStationId(userStation);
     if (!globalId) {
         throw new Error("Station not found");
     }
@@ -178,14 +203,14 @@ async function createWidget() {
     // Get and filter departures
     let departures = await getDepartures(globalId);
     departures = departures.filter(entry => {
-        const lineMatches = labels ? labels.includes(entry.label) : true;
-        const platformMatches = platform ? entry.platform === platform : true;
+        const lineMatches = userLines ? userLines.includes(entry.label) : true;
+        const platformMatches = userPlatforms ? entry.platform === userPlatforms : true;
         return lineMatches && platformMatches;
     });
 
     // Create widget
     const widget = new ListWidget();
-    widget.backgroundColor = new Color(bgColor);
+    widget.backgroundColor = new Color(userBackgroundColor);
     widget.setPadding(widgetConfig.padding, widgetConfig.padding, widgetConfig.padding, widgetConfig.padding);
 
     // Add header
@@ -201,7 +226,7 @@ async function createWidget() {
         widgetConfig.headerSize
     );
 
-    const stationName = headerStack.addText(station.replace(/^München-/, ''));
+    const stationName = headerStack.addText(userStation.replace(/^München-/, ''));
     stationName.textColor = Color.white();
     stationName.leftAlignText();
     stationName.font = Font.boldSystemFont(widgetConfig.headlineFontSize);
