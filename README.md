@@ -45,18 +45,18 @@ This widget shows current departures for buses, trains, and trams at any specifi
 
 The widget accepts parameters in the following format:
 ```
-StationName,Platform,Labels,BackgroundColor
+station:StationName;platform:Number;lines:LinesList;background:Color
 ```
 
 Example:
 ```
-Marienplatz,1,S3;S4,#1C1C1C
+station:Marienplatz;platform:1;lines:S3,S4;background:#1C1C1C
 ```
 
-- `StationName`: Required - The name of the station
-- `Platform`: Optional - Filter by specific platform number
-- `Labels`: Optional - Filter by specific lines (separated by semicolons)
-- `BackgroundColor`: Optional - Custom background color (default: #1C1C1C)
+- `station`: Required - The name of the station
+- `platform`: Optional - Filter by specific platform number
+- `lines`: Optional - Filter by specific lines (separated by commas)
+- `background`: Optional - Custom background color (default: #1C1C1C)
 
 ### Transport Types
 
