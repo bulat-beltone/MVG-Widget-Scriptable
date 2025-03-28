@@ -19,6 +19,13 @@ const CONFIG = {
     defaultTransportTypes: "SBAHN,UBAHN,TRAM,BUS,REGIONAL_BUS"
 };
 
+// Parse widget parameters
+const parameters = args.widgetParameter ? args.widgetParameter.split(",") : [];
+const station = parameters[0]?.trim() || "Marienplatz";
+const platform = parameters[1] ? Number(parameters[1].trim()) : null;
+const labels = parameters[2] ? parameters[2].split(";").map(label => label.trim()) : null;
+const bgColor = parameters[3] ? parameters[3].trim() : CONFIG.defaultBackgroundColor;
+
 // Widget size configurations
 const WIDGET_CONFIG = {
     small: {
@@ -97,13 +104,6 @@ const LINE_COLORS = {
     TRAM: "#D82020"
 };
 
-// Parse widget parameters
-const parameters = args.widgetParameter ? args.widgetParameter.split(",") : [];
-const station = parameters[0]?.trim() || "Marienplatz";
-const platform = parameters[1] ? Number(parameters[1].trim()) : null;
-const labels = parameters[2] ? parameters[2].split(";").map(label => label.trim()) : null;
-const bgColor = parameters[3] ? parameters[3].trim() : CONFIG.defaultBackgroundColor;
-
 // Helper Functions
 function formatStationName(station) {
     return station.replace(" ", "&")
@@ -178,9 +178,9 @@ async function createWidget() {
     // Get and filter departures
     let departures = await getDepartures(globalId);
     departures = departures.filter(entry => {
-        const labelMatches = labels ? labels.includes(entry.label) : true;
+        const lineMatches = labels ? labels.includes(entry.label) : true;
         const platformMatches = platform ? entry.platform === platform : true;
-        return labelMatches && platformMatches;
+        return lineMatches && platformMatches;
     });
 
     // Create widget
